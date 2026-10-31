@@ -1,0 +1,6 @@
+{
+  "name": "SecurePrint",
+  "description": "Privacy-focused document printing platform for Xerox, photocopy, and print shops.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

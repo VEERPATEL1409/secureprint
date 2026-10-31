@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'veerapatel_btce2025@iar.ac.in' ||
+        request.auth.token.email == 'admin@secureprint.internal' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // 1. Shops Directory
+    match /shops/{shopId} {
+      // Anyone can view shop information to print or search in directory
+      allow read: if true;
+      // Allow shop creation and updates
+      allow create, update: if true;
+      // Only admins or shop owner can delete shops
+      allow delete: if isAdmin() || (isSignedIn() && request.auth.uid == shopId);
+    }
+
+    // 2. Customer Sessions & Realtime WhatsApp Chat
+    match /customerSessions/{sessionId} {
+      // Sessions are ephemeral and accessed by customer token and shop counter
+      allow read, write: if true;
+
+      match /messages/{messageId} {
+        allow read, write: if true;
+      }
+    }
+
+    // 3. Print Jobs & Files
+    match /printJobs/{jobId} {
+      // Both counter operator and anonymous customer need realtime access
+      allow read, write: if true;
+
+      match /files/{fileId} {
+        allow read, write: if true;
+      }
+
+      match /messages/{messageId} {
+        allow read, write: if true;
+      }
+    }
+
+    // 4. Blocked Sessions
+    match /blockedSessions/{blockId} {
+      allow read, write: if true;
+    }
+
+    // 5. System Audit Logs
+    match /auditLogs/{logId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAdmin();
+    }
+
+    // 6. System Settings
+    match /systemSettings/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

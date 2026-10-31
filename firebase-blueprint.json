@@ -1,0 +1,177 @@
+{
+  "entities": {
+    "Shop": {
+      "title": "Shop",
+      "description": "Registered photocopy/print shop entity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "pincode": { "type": "string" },
+        "gstin": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "active", "suspended", "blocked"] },
+        "isOpen": { "type": "boolean" },
+        "publicCode": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "ownerName", "email", "status", "publicCode"]
+    },
+    "CustomerSession": {
+      "title": "CustomerSession",
+      "description": "Temporary customer session initiated via QR code scan",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "shopId": { "type": "string" },
+        "shopPublicCode": { "type": "string" },
+        "token": { "type": "string" },
+        "customerName": { "type": "string" },
+        "phone": { "type": "string" },
+        "guestUid": { "type": "string", "description": "Firebase anonymous UID or guest session identifier" },
+        "isAnonymous": { "type": "boolean", "description": "Whether session is backed by anonymous guest authentication" },
+        "lastActiveAt": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "expired", "blocked"] },
+        "createdAt": { "type": "string" },
+        "expiresAt": { "type": "string" }
+      },
+      "required": ["id", "shopId", "token", "customerName", "status", "createdAt", "expiresAt"]
+    },
+    "PrintJob": {
+      "title": "PrintJob",
+      "description": "Print job containing one or more files and user specifications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sessionId": { "type": "string" },
+        "shopId": { "type": "string" },
+        "token": { "type": "string" },
+        "customerName": { "type": "string" },
+        "status": { "type": "string", "enum": ["WAITING", "REVIEWING", "PRINTING", "PRINTED", "REJECTED", "EXPIRED"] },
+        "totalFiles": { "type": "number" },
+        "settings": { "type": "object", "description": "Verified print settings configured for the print job" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "expiresAt": { "type": "string" }
+      },
+      "required": ["id", "sessionId", "shopId", "token", "status", "createdAt", "expiresAt"]
+    },
+    "PrintFile": {
+      "title": "PrintFile",
+      "description": "Document uploaded for printing within a print job",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "jobId": { "type": "string" },
+        "sessionId": { "type": "string" },
+        "shopId": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileSize": { "type": "number" },
+        "fileType": { "type": "string" },
+        "storageUrl": { "type": "string" },
+        "storagePath": { "type": "string" },
+        "pages": { "type": "number" },
+        "status": { "type": "string", "enum": ["ready", "printing", "printed", "deleted"] },
+        "settings": { "type": "object" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "jobId", "sessionId", "shopId", "fileName", "fileSize", "fileType", "status"]
+    },
+    "PrintMessage": {
+      "title": "PrintMessage",
+      "description": "Message exchanged between customer and shop operator",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "jobId": { "type": "string" },
+        "sender": { "type": "string", "enum": ["customer", "shop"] },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "jobId", "sender", "text", "createdAt"]
+    },
+    "BlockedSession": {
+      "title": "BlockedSession",
+      "description": "Abusive session blocked by shop staff or system",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sessionId": { "type": "string" },
+        "shopId": { "type": "string" },
+        "reason": { "type": "string" },
+        "blockedBy": { "type": "string" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "sessionId", "shopId", "reason", "active", "createdAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "System event audit log for security tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "action": { "type": "string" },
+        "performedBy": { "type": "string" },
+        "targetType": { "type": "string" },
+        "targetId": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "action", "performedBy", "timestamp"]
+    },
+    "SystemSettings": {
+      "title": "SystemSettings",
+      "description": "Global administrative parameters",
+      "type": "object",
+      "properties": {
+        "maxFileSizeMb": { "type": "number" },
+        "maxFilesPerJob": { "type": "number" },
+        "expirationHours": { "type": "number" },
+        "allowedExtensions": { "type": "string" },
+        "maintenanceMode": { "type": "boolean" },
+        "bannerNotice": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/shops/{shopId}": {
+      "schema": "Shop",
+      "description": "Directory of registered printing shops"
+    },
+    "/customerSessions/{sessionId}": {
+      "schema": "CustomerSession",
+      "description": "Ephemeral customer sessions initiated through shop QR code"
+    },
+    "/printJobs/{jobId}": {
+      "schema": "PrintJob",
+      "description": "Print jobs containing file manifests and state"
+    },
+    "/printJobs/{jobId}/files/{fileId}": {
+      "schema": "PrintFile",
+      "description": "Individual files attached to a print job"
+    },
+    "/printJobs/{jobId}/messages/{messageId}": {
+      "schema": "PrintMessage",
+      "description": "Real-time chat messages between customer and shop"
+    },
+    "/blockedSessions/{blockId}": {
+      "schema": "BlockedSession",
+      "description": "Record of blocked customer sessions"
+    },
+    "/auditLogs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Immutable security and operational event logs"
+    },
+    "/systemSettings/{settingId}": {
+      "schema": "SystemSettings",
+      "description": "Platform configuration managed by administrators"
+    }
+  }
+}

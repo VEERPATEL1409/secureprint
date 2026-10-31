@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* When printing the QR Standee */
+  body:has(#print-standee) * {
+    visibility: hidden;
+  }
+
+  body:has(#print-standee) #print-standee,
+  body:has(#print-standee) #print-standee * {
+    visibility: visible;
+  }
+
+  body:has(#print-standee) #print-standee {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 90% !important;
+    max-width: 480px !important;
+    margin: 0 !important;
+    padding: 30px !important;
+    box-shadow: none !important;
+    border: 3px solid #000 !important;
+  }
+
+  /* Hide navigation, headers, footers and action buttons */
+  header, nav, aside, button, .no-print {
+    display: none !important;
+  }
+}
